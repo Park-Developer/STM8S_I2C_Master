@@ -403,46 +403,43 @@ void set_INA219(INA219 ina219_obj){
    - BUS Voltage Range : 32V FSR 
    - PGA(Shunt Voltage Only) : Gain => 1/8, Range : 320mV
    - BADC(Bus ADC Resolution) : Samples => 12bit, Conversion Time : 532us 
-   - SADC(Shint ADC Resolution) : Samples => 12bit, Conversion Time : 532us 
+   - SADC(Shunt ADC Resolution) : Samples => 12bit, Conversion Time : 532us 
    - Operating Mode : Shunt and bus, continuous 
 
   */
 
-  /*
-  < INA219 Calibration Value Calc >
-  */
 
-  // Set Config register to take into account the settings above
+  // [1] Set Config register to take into account the settings above
   uint16_t config = INA219_CONFIG_BVOLTAGERANGE_32V |
                     INA219_CONFIG_GAIN_8_320MV | INA219_CONFIG_BADCRES_12BIT |
                     INA219_CONFIG_SADCRES_12BIT_1S_532US |
                     INA219_CONFIG_MODE_SANDBVOLT_CONTINUOUS;
   
-  uint8_t config_val={(uint8_t)config, (uint8_t)(config>>8)};
+  uint8_t config_val[2]={(uint8_t)(config>>8), (uint8_t)config};
   
-  I2C_WriteRegister(ina219_obj.i2c_addr,INA219_REG_CONFIG, 2, &config_val);
+  I2C_WriteRegister(ina219_obj.i2c_addr,INA219_REG_CONFIG, 2, config_val);
 
 
-  // Set Calibration register to 'Cal' calculated above
-  uint8_t cali_val={(uint8_t)ina219_obj.Calibration_Value, (uint8_t)(ina219_obj.Calibration_Value>>8)};
+  // [2] Set Calibration register to 'Cal' calculated above
+  uint8_t cali_val[2]={(uint8_t)(ina219_obj.Calibration_Value>>8), (uint8_t)(ina219_obj.Calibration_Value)};
 
-  I2C_WriteRegister(ina219_obj.i2c_addr, INA219_REG_CALIBRATION, 2, &cali_val);
+  I2C_WriteRegister(ina219_obj.i2c_addr, INA219_REG_CALIBRATION, 2, cali_val);
 }
 
 
 float getCurrent_mA(INA219 ina219_obj){
-  // (1) Set Calibration 
+  // [1] Set Calibration 
   //  Sometimes a sharp load will reset the INA219, which will reset the cal register,
-  uint8_t cali_val[2]={(uint8_t)ina219_obj.Calibration_Value, (uint8_t)(ina219_obj.Calibration_Value>>8)};
+  uint8_t cali_val[2]={(uint8_t)(ina219_obj.Calibration_Value>>8), (uint8_t)(ina219_obj.Calibration_Value)};
 
   I2C_WriteRegister(ina219_obj.i2c_addr, INA219_REG_CALIBRATION, 2, cali_val);
 
-  // (2) Read Current Register
+  // [2] Read Current Register
   uint8_t cur_data[2];
 
   I2C_ReadRegister(ina219_obj.i2c_addr, INA219_REG_CURRENT, 2, cur_data);
 
-  uint16_t cur_read_val= (cur_data[1]<<8) | cur_data[0];
+  uint16_t cur_read_val= (cur_data[0]<<8) | cur_data[1];
 
   //float ret=(cur_read_val * ina219_obj.Current_LSB_mA);
   // (3) Calc Current(mA)
