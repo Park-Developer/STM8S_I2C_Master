@@ -396,6 +396,54 @@ void TIM4_Init (void) {
 }
 
 
+/* TCA9535 Setting Function */
+void set_TCA9535(IO_Expander io_exp){
+  
+  // Set Timer for I2C Communication
+  set_tout_ms(500);
+
+  uint8_t input_set[1]={0xff};
+  uint8_t output_set[1]={0x00};
+
+  if (io_exp.io_set==1){ // Input Mode
+    
+    I2C_WriteRegister(io_exp.i2c_addr, CONFIGURATION_PORT_0, 1, input_set);
+    I2C_WriteRegister(io_exp.i2c_addr, CONFIGURATION_PORT_1, 1, input_set);
+
+  }else{ // Output Mode
+
+    I2C_WriteRegister(io_exp.i2c_addr, CONFIGURATION_PORT_0, 1, output_set);
+    I2C_WriteRegister(io_exp.i2c_addr, CONFIGURATION_PORT_1, 1, output_set);
+    
+  }
+
+}
+
+
+uint16_t read_io_expander(IO_Expander io_exp){
+  uint8_t read_data[2];
+  
+  //  I2C_ReadRegister(u8 slave_address, u8 u8_regAddr, u8 u8_NumByteToRead, u8 *u8_DataBuffer)
+
+  I2C_ReadRegister(io_exp.i2c_addr, INPUT_PORT_0, 1, read_data); // PORT0 Read
+
+  I2C_ReadRegister(io_exp.i2c_addr, INPUT_PORT_1, 1, read_data+1); // PORT1 Read
+
+  return (((uint16_t)read_data[1]<<8) | read_data[0]);
+}
+
+
+void write_io_expander(IO_Expander io_exp, uint16_t write_data){
+
+  uint8_t io_exp_val[2]={ (uint8_t)write_data, (uint8_t)(write_data>>8) };
+  
+  I2C_WriteRegister(io_exp.i2c_addr, OUTPUT_PORT_0, 1, io_exp_val); // PORT0 Write
+
+  I2C_WriteRegister(io_exp.i2c_addr, OUTPUT_PORT_1, 1, io_exp_val+1); // PORT1 Write
+  
+
+}
+
 /* INA219 Setting Function */
 void set_INA219(INA219 ina219_obj){
   /*
@@ -408,6 +456,8 @@ void set_INA219(INA219 ina219_obj){
 
   */
 
+  // Set Timer for I2C Communication
+  set_tout_ms(500);
 
   // [1] Set Config register to take into account the settings above
   uint16_t config = INA219_CONFIG_BVOLTAGERANGE_32V |

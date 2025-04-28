@@ -1,4 +1,12 @@
-// stm8flash -c stlinkv2 -p stm8s103f3 -w main.ihx
+/*
+< STM8S103K3 Firmware >
+- Author : 
+- Version : V1.0
+- Compiler : SDCC
+- Compile Command : make 
+- Flash Command : stm8flash -c stlinkv2 -p stm8s103f3 -w main.ihx
+*/
+
 
 #include <stm8s.h>
 
@@ -30,6 +38,14 @@ volatile uint16_t curr_val;
 // INA219 Config
 INA219 ina219;
 
+// IO Expander Config
+
+IO_Expander io_exp1;
+IO_Expander io_exp2;
+IO_Expander io_exp3;
+IO_Expander io_exp4;
+IO_Expander io_exp5;
+IO_Expander io_exp6;
 
 
 
@@ -52,6 +68,39 @@ void main(void) {
     __asm__("rim"); // interrupt enable
     set_sys_tout_ms(2000);
     
+
+    // Set IO Expander 
+
+    // IO Expander 1 Setting
+    io_exp1.io_set=1; // input
+    io_exp1.i2c_addr=IO_EXP_ADDR1;
+    set_TCA9535(io_exp1); 
+
+    // IO Expander 2 Setting
+    io_exp2.io_set=1; // input
+    io_exp2.i2c_addr=IO_EXP_ADDR2;
+    set_TCA9535(io_exp2);
+
+    // IO Expander 3 Setting
+    io_exp3.io_set=1; // input
+    io_exp3.i2c_addr=IO_EXP_ADDR3;
+    set_TCA9535(io_exp3);
+
+    // IO Expander 4 Setting
+    io_exp4.io_set=1; // input
+    io_exp4.i2c_addr=IO_EXP_ADDR4;
+    set_TCA9535(io_exp4);
+
+    // IO Expander 5 Setting
+    io_exp5.io_set=0; // output
+    io_exp5.i2c_addr=IO_EXP_ADDR5;
+    set_TCA9535(io_exp5);
+
+    // IO Expander 6 Setting
+    io_exp6.io_set=0; // output
+    io_exp6.i2c_addr=IO_EXP_ADDR6;
+    set_TCA9535(io_exp6);
+    
     
     // Set INA219
     ina219.device_no=1;    
@@ -63,10 +112,11 @@ void main(void) {
     ina219.Calibration_Value=524; // calculated with 0.04096
     ina219.Current_LSB_mA=0.781;
     
-    set_tout_ms(500);
+    //set_tout_ms(500); // for set ina219
     set_INA219(ina219);
 
     
+    set_tout_ms(500);
     while(1){
 
         if(sys_tout()==0) { // system timer loop 
@@ -141,7 +191,7 @@ void UART1_RX_IRQHandler(void) __interrupt(18) {
         // Transmit Data
         UART1_SendByte(received_data);   
     }
-  }
+}
   
   
  void TIM4_UPD_OVF_IRQHandler(void) __interrupt(23){
@@ -157,4 +207,4 @@ void UART1_RX_IRQHandler(void) __interrupt(18) {
         --sys_tout;
     }
 
-  }
+}

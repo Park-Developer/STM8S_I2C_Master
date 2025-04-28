@@ -7,13 +7,37 @@
 
 typedef struct IO_Expander
 {
-  uint8_t device_no; // Io Expander Number to identify
-  uint8_t io_set; // IO Setting to config Input or Output
+  uint8_t io_set; // IO Setting to config Input(1) or Output(0)
   uint8_t i2c_addr; // device address
 
 } IO_Expander;
 
-#define IO_EXP_ADDR1 0x20
+// TCA9535 Register Command Byte
+#define INPUT_PORT_0 0x00
+#define INPUT_PORT_1 0x01
+
+#define OUTPUT_PORT_0 0x02
+#define OUTPUT_PORT_1 0x03
+
+#define POLARITY_INVERSION_PORT_0 0x04
+#define POLARITY_INVERSION_PORT_1 0x05
+
+#define CONFIGURATION_PORT_0 0x06
+#define CONFIGURATION_PORT_1 0x07
+
+
+// IO Expander Slave Address
+#define IO_EXP_ADDR1 0x21
+#define IO_EXP_ADDR2 0x22
+#define IO_EXP_ADDR3 0x23
+#define IO_EXP_ADDR4 0x24
+#define IO_EXP_ADDR5 0x25
+#define IO_EXP_ADDR6 0x26
+
+void set_TCA9535(IO_Expander io_exp);
+
+uint16_t read_io_expander(IO_Expander io_exp);
+void write_io_expander(IO_Expander io_exp, uint16_t write_data);
 
 /* < INA219 Setting > */
 // REF1 : 0.04096 is an internal fixed value used to ensure scaling is maintained properly
